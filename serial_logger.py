@@ -13,7 +13,7 @@ with open(OUTPUT_FILE, "a", newline="") as f:
 
     # Optional header if file is empty
     if f.tell() == 0:
-        writer.writerow(["timestamp_iso", "millis", "rssi"])
+        writer.writerow(["timestamp_iso", "millis", "rssi", "delta"])
 
     print(f"Logging data to {OUTPUT_FILE}... Press Ctrl+C to stop.")
 
@@ -25,11 +25,11 @@ with open(OUTPUT_FILE, "a", newline="") as f:
                 print(line)     # print to terminal
                 parts = line.split(",")
 
-                if len(parts) == 2:
-                    millis, rssi = parts
+                if len(parts) == 3:
+                    millis, rssi, delta = parts
 
                     # save with real timestamp + data
-                    writer.writerow([datetime.now().isoformat(), millis, rssi])
+                    writer.writerow([datetime.now().isoformat(), millis, rssi, delta])
                     f.flush()
 
     except KeyboardInterrupt:
