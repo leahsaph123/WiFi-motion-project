@@ -6,7 +6,7 @@ const char* WIFI_PASS = "boldvalley437";
 const char* PC_URL    = "http://10.0.0.57:5000/motion";
 const char* targetBSSID = "0E:36:C9:04:70:75";
 
-const float MOTION_THRESHOLD_DB = 4.0;
+const float MOTION_THRESHOLD_DBm = 4.0;
 const unsigned long COOLDOWN_MS = 30000;
 const float BASELINE_ALPHA = 0.05;  // how fast baseline tracks drift (smaller = slower)
 
@@ -91,7 +91,7 @@ void loop() {
     if (WiFi.BSSIDstr(i).equalsIgnoreCase(targetBSSID)) {
       int rawRSSI = WiFi.RSSI(i);
       float delta = rawRSSI - baselineRSSI;
-
+      Serial.println("time,raw_rssi,baseline,delta");
       Serial.print(currentTime);
       Serial.print(",");
       Serial.print(rawRSSI);
@@ -100,13 +100,13 @@ void loop() {
       Serial.print(",");
       Serial.println(delta);
 
-      if (abs(delta) > MOTION_THRESHOLD_DB &&
+      if (abs(delta) > MOTION_THRESHOLD_DBm &&
           currentTime - lastAlertTime > COOLDOWN_MS) {
         Serial.println(">>> Motion detected, sending alert");
         sendMotionAlert(delta, rawRSSI);
         lastAlertTime = currentTime;
         // Don't update baseline during a motion event — it would chase the spike
-      } else {
+      } else if (abs(delta) < MOTION_THRESHOLD_DBm) {
         // Slowly update baseline only when no motion is detected
         baselineRSSI = (1.0 - BASELINE_ALPHA) * baselineRSSI + BASELINE_ALPHA * rawRSSI;
       }
